@@ -32,7 +32,9 @@ export async function POST(req: Request) {
 
   const scope = folderId ? `the folder "${folders.find((f) => f.id === folderId)?.name ?? "?"}"` : "all of their meetings";
   const context = [
-    `Today is ${new Date().toUTCString()}. The user${settings.userName ? ` (${settings.userName})` : ""} is asking across ${scope}: ${pool.length} meeting(s), newest first.`,
+    // Date only (no time): this text sits in the cached system block, so anything
+    // that changes per request would break the prompt cache on every turn.
+    `Today is ${new Date().toISOString().slice(0, 10)}. The user${settings.userName ? ` (${settings.userName})` : ""} is asking across ${scope}: ${pool.length} meeting(s), newest first.`,
     notesOnly ? `Note: the ${notesOnly} oldest meeting(s) are included without transcripts to fit the context.` : "",
     blocks.join("\n\n") || "(The user has no meetings yet.)",
   ].filter(Boolean).join("\n\n");

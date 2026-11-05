@@ -30,6 +30,13 @@ export function describeError(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
 }
 
+function logUsage(kind: string, msg: Anthropic.Beta.BetaMessage) {
+  const u = msg.usage;
+  console.info(
+    `[claude] ${kind} model=${msg.model} stop=${msg.stop_reason} in=${u.input_tokens} out=${u.output_tokens} cache_write=${u.cache_creation_input_tokens ?? 0} cache_read=${u.cache_read_input_tokens ?? 0}`,
+  );
+}
+
 export function meetingContext(m: Meeting, userName: string, opts: { includeTranscript?: boolean } = {}) {
   const { includeTranscript = true } = opts;
   const when = m.scheduledAt ?? m.createdAt;
@@ -143,6 +150,7 @@ export async function enhanceMeeting(m: Meeting, template: Template, userName: s
     ],
   });
   const msg = await stream.finalMessage();
+  logUsage("enhance", msg);
 
   if (msg.stop_reason === "refusal") throw new Error("Claude declined to enhance these notes.");
   if (msg.stop_reason === "max_tokens") throw new Error("The enhanced notes were too long and got cut off.");
@@ -185,6 +193,7 @@ export function streamChat(context: string, history: Anthropic.Beta.BetaMessageP
           }
         }
         const final = await stream.finalMessage();
+        logUsage("chat", final);
         if (final.stop_reason === "refusal") {
           controller.enqueue(enc.encode("\n\n_Claude declined to answer this request._"));
         }
