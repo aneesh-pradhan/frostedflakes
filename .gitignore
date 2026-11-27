@@ -30,7 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — .env and .env.local hold secrets and must stay untracked.
+# .env.example is the only env file that belongs in git.
+.env
 .env*
 !.env.example
 
